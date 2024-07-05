@@ -82,7 +82,7 @@ response = api.recom(
         province="Tehran",  # Optional: Any unique string
     ),
 )
-print(response)  # [success: true] {'visit': {'18': 0.25, '19': 0.75}}
+print(response)  # [success: true] {'click': {'18': 0.25, '19': 0.75}, 'buy': {'13': 0.89, '95': 0.11}}
 ```
 
 #### Parameters
@@ -90,6 +90,13 @@ print(response)  # [success: true] {'visit': {'18': 0.25, '19': 0.75}}
 - `labels` (list[str]): List of event labels for which recommendations are requested.
 - `profiles` (list[Profile|SecureProfile] or Profile|SecureProfile, optional): List of `Profile` or `SecureProfile` objects or a single `Profile` or a single `SecureProfile`.
 - `geo` (Geo, optional): A `Geo` object containing geographical information.
+
+#### Explanation of Response:
+The response structure (`{'click': {'18': 0.25, '19': 0.75}, 'buy': {'13': 0.89, '95': 0.11}}`) indicates:
+- For the `click` label, the user is predicted to engage more with `Tag.id = 19` (with a probability of `0.75`) compared to `Tag.id = 18` (`0.25`).
+- For the `buy` label, the user is likely to make a purchase with `Tag.id = 13` (`0.89` probability) rather than `Tag.id = 95` (`0.11` probability).
+
+These predictions are derived from the user's past interactions (`click` and `buy` events) and other factors such as their profile attributes and geographical location. The recommendation engine uses this data to suggest items or actions that are likely to be of interest to the user, helping to optimize engagement or conversions based on predictive analytics.
 
 ### Verifying API Connectivity
 
