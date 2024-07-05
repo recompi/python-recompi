@@ -27,7 +27,7 @@ api = RecomPI(api_key="YOUR_CAMPAIGN_TOKEN")
 Use the `push` method to send user interaction data to the RecomPI API. You can include tags, profiles, location, and geographical information.
 
 ```python
-from recompi import RecomPI, Tag, Profile, Location, Geo
+from recompi import RecomPI, Tag, Profile, SecureProfile, Location, Geo
 
 api = RecomPI(api_key="YOUR_CAMPAIGN_TOKEN")
 response = api.push(
@@ -59,9 +59,10 @@ print(response)  # [success: true]
 
 - `label` (str): A label for the event, e.g., "click".
 - `tags` (list[Tag]): List of `Tag` objects representing metadata.
-- `profiles` (list[Profile] or Profile): List of `Profile` objects or a single `Profile`.
+- `profiles` (list[Profile|SecureProfile] or Profile|SecureProfile): List of `Profile` or `SecureProfile` objects or a single `Profile` or a single `SecureProfile`.
 - `location` (Location, optional): A `Location` object containing IP, URL, referer, and user-agent information.
 - `geo` (Geo, optional): A `Geo` object containing geographical information like country and province.
+
 
 ### Getting Recommendations
 
@@ -79,13 +80,13 @@ response = api.recom(
         province="Tehran",  # Optional: Any unique string
     ),
 )
-print(response)  # [success: true] {'مشاهده پست\u200c': {'18': 0.25, '19': 0.75}}
+print(response)  # [success: true] {'visit': {'18': 0.25, '19': 0.75}}
 ```
 
 #### Parameters
 
 - `labels` (list[str]): List of event labels for which recommendations are requested.
-- `profiles` (list[Profile] or Profile, optional): List of `Profile` objects or a single `Profile`.
+- `profiles` (list[Profile|SecureProfile] or Profile|SecureProfile, optional): List of `Profile` or `SecureProfile` objects or a single `Profile` or a single `SecureProfile`.
 - `geo` (Geo, optional): A `Geo` object containing geographical information.
 
 ### Verifying API Connectivity
@@ -99,6 +100,54 @@ api = RecomPI(api_key="YOUR_CAMPAIGN_TOKEN")
 response = api.verify()
 print("API is well configured and connected?", response.is_success())  # [success: true]
 ```
+
+### Usage with SecureProfile
+
+You can use `SecureProfile` to ensure that sensitive information such as user IDs are hashed before being sent to the API. This adds an extra layer of security by obfuscating the actual IDs.
+
+```python
+from recompi import RecomPI, Tag, SecureProfile, Location, Geo
+
+api = RecomPI(api_key="YOUR_CAMPAIGN_TOKEN", hash_salt="SOME_HASH_SALT")
+response = api.push(
+    label="click",
+    tags=[
+        Tag(id="1", name="Technology", desc="Technology News"),
+        Tag(
+            id="2",
+            name="Online Marketing Tools",
+            desc="Latest news on online marketing tools",
+        ),
+    ],
+    profiles=SecureProfile(name="user_id", id="123"),
+    location=Location(
+        ip="1.1.1.1",  # Optional
+        url="https://www.example.com/some/path?param1=1&param2=2",
+        referer="REFERER_URL",  # Optional
+        useragent="USERAGENT",  # Optional
+    ),
+    geo=Geo(
+        country="Iran",  # Optional: 'IR' or the unique country ID
+        province="Tehran",  # Optional: Any unique string
+    ),  # Optional
+)
+print(response)  # [success: true]
+```
+
+#### Parameters
+
+- `label` (str): A label for the event, e.g., "click".
+- `tags` (list[Tag]): List of `Tag` objects representing metadata.
+- `profiles` (list[Profile|SecureProfile] or Profile|SecureProfile): List of `Profile` or `SecureProfile` objects or a single `Profile` or a single `SecureProfile`.
+- `location` (Location, optional): A `Location` object containing IP, URL, referer, and user-agent information.
+- `geo` (Geo, optional): A `Geo` object containing geographical information like country and province.
+
+### Additional Details:
+
+- **Initialization**: `SecureProfile` is initialized with `name` and `id`. It extends the base `Profile` to add the capability of hashing the `id`.
+- **`to_json` Method**: This method converts the `SecureProfile` instance to a JSON-compatible dictionary, hashing the `id` if a `hash_salt` is provided. This is useful for securely sending profile data.
+- **`recom`**: If you use `SecureProfile` in the `push` method, you must also use `SecureProfile` to retrieve data with the `recom` method. This ensures the consistency of hashed data between sending and retrieving.
+
 
 ### Data Structures
 
@@ -119,7 +168,22 @@ Represents a user profile with an ID and name.
 ```python
 from recompi import Profile
 
-profile = Profile(id="user_id", name="123")
+profile = Profile(name="user_id", id="123")
+
+print(profile.to_json())  # {'user_id': '123'}
+```
+
+#### SecureProfile
+
+Represents a user profile with a secure ID and name.
+
+```python
+from recompi import SecureProfile
+
+profile = SecureProfile(name="user_id", id="123")
+
+print(profile.to_json())  # {'user_id': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}
+print(profile.to_json("SOME_HASH_SALT"))  # {'user_id': 'e6ee87b7300073f85bc86d817b6656d58443b23438faacc6737bde461ecf38cd'}
 ```
 
 #### Location

@@ -1,4 +1,5 @@
 import requests
+from hashlib import sha256
 
 
 class RecomPIException(Exception):
@@ -210,6 +211,58 @@ class Profile(object):
             str: JSON string representation of the Profile instance.
         """
         return str(self.to_json())
+
+
+class SecureProfile(Profile):
+    """
+    Represents a secure profile with secure id (hashed) and name attributes.
+
+    Attributes:
+        id (int or None): ID of the profile.
+        name (str or None): Name of the profile.
+
+    Methods:
+        __init__(id, name):
+            Initializes a Profile instance with required `id` and `name`.
+
+        to_json():
+            Convert the Profile instance to a JSON-compatible dictionary.
+
+        __str__():
+            Returns a JSON string representation of the Profile instance.
+    """
+
+    id = None
+    name = None
+
+    def __init__(self, name, id):
+        """
+        Initialize the Profile with required ID and name.
+
+        Args:
+            name (str): Name of the profile.
+            id (int): ID of the profile.
+
+        Raises:
+            RecomPIException: If any of the profile fields are not provided.
+            RecomPIFieldTypeError: If any of the parameters (id, name) are not of the expected type.
+        """
+        super(SecureProfile, self).__init__(name, id)
+
+    def to_json(self, hash_salt=None):
+        """
+        Convert the Profile instance to a secure JSON-compatible dictionary.
+
+        Args:
+            hash_salt (str, optional): A hash salt string used for securing the profile's ID -- In development environment you can ignore this.
+
+        Returns:
+            dict: Dictionary representation of the Profile instance.
+        """
+        return {
+            n: sha256((v + hash_salt if hash_salt else "").encode()).hexdigest()
+            for n, v in super(SecureProfile, self).to_json().items()
+        }
 
 
 class Location(object):
@@ -462,7 +515,7 @@ class RecomPI(object):
 
     BASE_URL = "https://api.recompi.com"
 
-    def __init__(self, api_key, version=2, secure_url=True):
+    def __init__(self, api_key, version=2, secure_url=True, hash_salt=None):
         """
         Initialize RecomPI client with API key and version.
 
@@ -470,9 +523,31 @@ class RecomPI(object):
             api_key (str): API key for authentication.
             version (int, optional): API version. Default is 2.
             secure_url (bool, optional): Use HTTPS if True, HTTP if False. Default is True.
+            hash_salt (str, optional): A hash salt string used for SecureProfile -- If it's not intented to use SecureProfile or in development environment you can ignore this.
         """
         self.api_key = api_key
         self.version = version
+        self.hash_salt = hash_salt
+
+        RecomPIFieldTypeError.if_not_validated(
+            "RecomPI.__init__", "api_key", api_key, str
+        )
+
+        RecomPIFieldTypeError.if_not_validated(
+            "RecomPI.__init__", "version", version, int
+        )
+
+        RecomPIFieldTypeError.if_not_validated(
+            "RecomPI.__init__", "secure_url", secure_url, bool
+        )
+
+        if version <= 0:
+            raise RecomPIException("Version must be greater than 0.")
+
+        if hash_salt is not None:
+            RecomPIFieldTypeError.if_not_validated(
+                "RecomPI.__init__", "hash_salt", hash_salt, str
+            )
 
         if not secure_url:
             self.BASE_URL = "http://api.recompi.com"
@@ -518,6 +593,31 @@ class RecomPI(object):
             merged_dict.update(d)
         return merged_dict
 
+    def _validate_profiles(self, profiles):
+        if not isinstance(profiles, list):
+            raise RecomPIException(
+                "profiles must be a list of Profile or SecureProfile instances."
+            )
+
+        if not profiles:
+            raise RecomPIException(
+                "At least one profile must be provided for personalized recommendations."
+            )
+
+        for index, profile in enumerate(profiles):
+            if isinstance(profile, Profile):
+                RecomPIFieldTypeError.if_not_validated(
+                    "push", "profiles[%s]" % index, profile, Profile
+                )
+            elif isinstance(profile, Profile):
+                RecomPIFieldTypeError.if_not_validated(
+                    "push", "profiles[%s]" % index, profile, SecureProfile
+                )
+            else:
+                raise RecomPIException(
+                    "All profiles must be either Profile or SecureProfile instances."
+                )
+
     def push(self, label, tags, profiles, location, geo=None):
         """
         Push data to the RecomPI API.
@@ -525,7 +625,7 @@ class RecomPI(object):
         Args:
             label (str): Label for the data.
             tags (list[Tag]): List of Tag objects associated with the data.
-            profiles (Profile,list[Profile]): User profiles for personalized recommendations.
+            profiles (Profile|SecureProfile or list[Profile|SecureProfile]): User profiles for personalized recommendations.
             location (Location, optional): Location object associated with the data.
             geo (Geo, optional): Geographic data for location-based recommendations.
 
@@ -543,9 +643,11 @@ class RecomPI(object):
 
         if isinstance(profiles, Profile):
             profiles = [profiles]
-        RecomPIFieldTypeError.if_not_validated(
-            "push", "profiles", profiles, Profile, True
-        )
+
+        if isinstance(profiles, SecureProfile):
+            profiles = [profiles]
+
+        self._validate_profiles(profiles)
 
         RecomPIFieldTypeError.if_not_validated("push", "location", location, Location)
 
@@ -572,7 +674,7 @@ class RecomPI(object):
 
         Args:
             labels (list[str]): List of labels.
-            profiles (Profile or list of Profile, optional): User profiles for personalized recommendations.
+            profiles (Profile|SecureProfile or list[Profile|SecureProfile], optional): User profiles for personalized recommendations.
             geo (Geo, optional): Geographic data for location-based recommendations.
 
         Returns:
@@ -589,9 +691,8 @@ class RecomPI(object):
         if profiles:
             if isinstance(profiles, Profile):
                 profiles = [profiles]
-            RecomPIFieldTypeError.if_not_validated(
-                "push", "profiles", profiles, Profile, True
-            )
+
+            self._validate_profiles(profiles)
 
         if geo:
             RecomPIFieldTypeError.if_not_validated("push", "geo", geo, Geo)
