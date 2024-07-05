@@ -22,6 +22,8 @@ from recompi import RecomPI
 api = RecomPI(api_key="YOUR_CAMPAIGN_TOKEN")
 ```
 
+> **Campaign Token**: To obtain `YOUR_CAMPAIGN_TOKEN`, register on the [RecomPI panel](https://panel.recompi.com/clients/sign_in). After registration, [add a campaign](https://panel.recompi.com/campaigns/new) in the panel, and a campaign token will be generated instantly. Use this token as your API key in the code.
+
 ### Pushing User Behavior
 
 Use the `push` method to send user interaction data to the RecomPI API. You can include tags, profiles, location, and geographical information.
