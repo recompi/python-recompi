@@ -1,0 +1,29 @@
+[project]
+name = "recompi"
+version = "1.0.13"
+description = "A Python wrapper for the RecomPI API"
+readme = "README.md"
+authors = [{ name = "RecomPI", email = "tech@recompi.com" }]
+keywords = []
+classifiers = [
+    "Programming Language :: Python :: 2",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+requires-python = ">=2.7"
+dependencies = [
+    "requests>=2.25.1"
+]
+
+[project.urls]
+Source = "https://github.com/recompi/python-recompi"
+"Use Cases" = "https://www.recompi.com/category/use-cases/documents-use-cases"
+"Bug Tracker" = "https://github.com/recompi/python-recompi/issues"
+Website = "https://www.recompi.com"
+Panel = "https://panel.recompi.com"
+"Wordpress Plugin" = "https://www.zhaket.com/web/recompi-plugin"
+
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
