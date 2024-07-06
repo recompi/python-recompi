@@ -260,7 +260,7 @@ class SecureProfile(Profile):
             dict: Dictionary representation of the Profile instance.
         """
         return {
-            n: sha256((v + hash_salt if hash_salt else "").encode()).hexdigest()
+            n: sha256((v + (hash_salt if hash_salt else "")).encode()).hexdigest()
             for n, v in super(SecureProfile, self).to_json().items()
         }
 

@@ -1,6 +1,6 @@
 [project]
 name = "recompi"
-version = "2.0.17"
+version = "2.0.18"
 description = "A Python wrapper for the RecomPI API"
 readme = "README.md"
 authors = [{ name = "RecomPI", email = "tech@recompi.com" }]
