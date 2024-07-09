@@ -245,10 +245,23 @@ except RecomPIException as e:
     print(e)
 ```
 
-### Contributing
+## Contributing and Development
 
-Feel free to submit issues, fork the repository, and send pull requests. Contributions are welcome!
+We welcome contributions to *RecomPI*! If you'd like to contribute, please follow these steps:
 
-### License
+- Fork the repository and clone it to your local environment.
+- Install dependencies and set up a development environment.
 
-This project is licensed under the MIT License.
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements-dev.txt
+pre-commit install --hook-type pre-commit --hook-type pre-push
+```
+
+- Make changes, write tests, and ensure all tests pass.
+- Submit a pull request with a detailed description of your changes.
+
+## Support
+
+For support or questions, please submit a [ticket](https://panel.recompi.com/tickets/new) or [open an issue](https://github.com/recompi/python-recompi/issues) on GitHub.

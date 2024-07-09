@@ -254,7 +254,8 @@ class SecureProfile(Profile):
         Convert the Profile instance to a secure JSON-compatible dictionary.
 
         Args:
-            hash_salt (str, optional): A hash salt string used for securing the profile's ID -- In development environment you can ignore this.
+            hash_salt (str, optional): A hash salt string used for securing the profile's ID \
+                -- In development environment you can ignore this.
 
         Returns:
             dict: Dictionary representation of the Profile instance.
@@ -481,7 +482,7 @@ class RecomPIResponse(object):
 
         try:
             self.body = response.json()
-        except:
+        except Exception:
             pass
 
     def is_success(self):
@@ -523,7 +524,8 @@ class RecomPI(object):
             api_key (str): API key for authentication.
             version (int, optional): API version. Default is 2.
             secure_url (bool, optional): Use HTTPS if True, HTTP if False. Default is True.
-            hash_salt (str, optional): A hash salt string used for SecureProfile -- If it's not intented to use SecureProfile or in development environment you can ignore this.
+            hash_salt (str, optional): A hash salt string used for SecureProfile \
+                -- If it's not intented to use SecureProfile or in development environment you can ignore this.
         """
         self.api_key = api_key
         self.version = version
@@ -625,7 +627,8 @@ class RecomPI(object):
         Args:
             label (str): Label for the data.
             tags (list[Tag]): List of Tag objects associated with the data.
-            profiles (Profile|SecureProfile or list[Profile|SecureProfile]): User profiles for personalized recommendations.
+            profiles (Profile|SecureProfile or list[Profile|SecureProfile]): User profiles for \
+                personalized recommendations.
             location (Location, optional): Location object associated with the data.
             geo (Geo, optional): Geographic data for location-based recommendations.
 
@@ -674,7 +677,8 @@ class RecomPI(object):
 
         Args:
             labels (list[str]): List of labels.
-            profiles (Profile|SecureProfile or list[Profile|SecureProfile], optional): User profiles for personalized recommendations.
+            profiles (Profile|SecureProfile or list[Profile|SecureProfile], optional): User profiles for \
+                personalized recommendations.
             geo (Geo, optional): Geographic data for location-based recommendations.
 
         Returns:
